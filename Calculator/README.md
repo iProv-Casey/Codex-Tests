@@ -1,6 +1,6 @@
 # Glass Calculator
 
-A single-page, glassmorphism-inspired calculator UI contained entirely within `glass-calculator.html`. The app combines modern translucent styling with fully functional calculator logic, including keyboard support.
+A single-page, glassmorphism-inspired calculator UI contained entirely within `index.html`. The app combines modern translucent styling with fully functional calculator logic, including keyboard support.
 
 ## Features
 - **Glassmorphism styling:** Gradients, blurred panels, and glowing accents create a frosted glass appearance with responsive tweaks for small screens.
@@ -9,6 +9,6 @@ A single-page, glassmorphism-inspired calculator UI contained entirely within `g
 - **Keyboard-friendly:** Buttons are wired to keyboard events such as Enter/`=` for evaluation and Escape for clearing.
 
 ## File overview
-- `glass-calculator.html` — Contains the HTML, CSS, and JavaScript for the calculator UI and behavior.
+- `index.html` — Contains the HTML, CSS, and JavaScript for the calculator UI and behavior.
 
 Open the HTML file directly in a browser to use the calculator.
