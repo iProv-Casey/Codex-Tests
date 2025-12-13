@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ACF Block Field Group Generator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1222;
+      --panel: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.12);
+      --accent: #8b5cf6;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --success: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 25% 20%, rgba(139,92,246,0.18), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(59,130,246,0.16), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+    }
+    header {
+      padding: 32px 26px 10px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+    p.lead {
+      margin: 0;
+      color: var(--muted);
+    }
+    main {
+      padding: 10px 26px 40px;
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); }
+    .dropzone {
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+    }
+    .dropzone.dragover { border-color: var(--accent); background: rgba(139,92,246,0.12); }
+    .dropzone small { color: var(--muted); }
+    .preview {
+      margin-top: 12px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      max-height: 260px;
+    }
+    .preview img { width: 100%; display: block; object-fit: contain; }
+    .palette { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+    }
+    .swatch .chip {
+      width: 20px; height: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25);
+    }
+    .options { display: flex; flex-wrap: wrap; gap: 12px; }
+    .option {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    .pill {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    button {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 8px 24px rgba(99,102,241,0.45);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button.secondary {
+      background: rgba(255,255,255,0.06);
+      box-shadow: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 12px 30px rgba(99,102,241,0.35); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .output textarea { min-height: 260px; font-family: "SFMono-Regular", Consolas, monospace; background: rgba(15,23,42,0.75); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; background: rgba(34,197,94,0.15); color: #bbf7d0; border: 1px solid rgba(34,197,94,0.35); font-size: 13px; }
+    .status { color: var(--muted); font-size: 14px; margin-top: 6px; }
+    @media (max-width: 640px) {
+      header { padding: 24px 16px 8px; }
+      main { padding: 12px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="pill">Static prototype · No external APIs</div>
+    <h1>ACF Block Field Group Generator</h1>
+    <p class="lead">Upload a screenshot of a page section and export a starter Advanced Custom Fields JSON file for an ACF block.</p>
+  </header>
+
+  <main>
+    <section class="card" id="dropCard">
+      <h2>1. Provide the screenshot</h2>
+      <p class="status">Drop an image or select a file to extract colors and capture metadata.</p>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept="image/*" hidden />
+        <p><strong>Drop screenshot here</strong> or click to browse</p>
+        <small>PNG, JPG, WEBP are supported. The image stays in your browser.</small>
+      </div>
+      <div class="preview" id="preview" hidden>
+        <img alt="Screenshot preview" id="previewImage" />
+      </div>
+      <div class="palette" id="palette" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h2>2. Describe the block</h2>
+      <div class="row">
+        <div>
+          <label for="blockLabel">Block label</label>
+          <input type="text" id="blockLabel" placeholder="Hero Banner" value="Hero Banner" />
+        </div>
+        <div>
+          <label for="blockSlug">Block slug</label>
+          <input type="text" id="blockSlug" placeholder="hero-banner" value="hero-banner" />
+        </div>
+      </div>
+      <label for="blockNotes">Notes or observed copy</label>
+      <textarea id="blockNotes" placeholder="Example: Eyebrow, headline, body copy, primary CTA, supporting image on the right."></textarea>
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label for="ctaText">CTA label (optional)</label>
+          <input type="text" id="ctaText" placeholder="Get started" />
+        </div>
+        <div>
+          <label for="ctaUrl">CTA target</label>
+          <input type="text" id="ctaUrl" placeholder="https://example.com" />
+        </div>
+      </div>
+      <div class="options" style="margin-top:14px;">
+        <label class="option"><input type="checkbox" id="includeCTA" checked /> Include CTA group</label>
+        <label class="option"><input type="checkbox" id="includeMedia" checked /> Include media/image field</label>
+        <label class="option"><input type="checkbox" id="includeColors" checked /> Include color pickers</label>
+      </div>
+    </section>
+
+    <section class="card output" style="grid-column: 1 / -1;">
+      <h2>3. Generate ACF field group</h2>
+      <p class="status" id="status">Waiting for screenshot...</p>
+      <div class="actions">
+        <button id="generate">Generate JSON</button>
+        <button class="secondary" id="download" disabled>Download file</button>
+        <button class="secondary" id="copy" disabled>Copy to clipboard</button>
+      </div>
+      <textarea id="result" placeholder="The generated ACF field group JSON will appear here." readonly></textarea>
+    </section>
+  </main>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const previewImage = document.getElementById('previewImage');
+    const paletteEl = document.getElementById('palette');
+    const blockLabel = document.getElementById('blockLabel');
+    const blockSlug = document.getElementById('blockSlug');
+    const blockNotes = document.getElementById('blockNotes');
+    const ctaText = document.getElementById('ctaText');
+    const ctaUrl = document.getElementById('ctaUrl');
+    const includeCTA = document.getElementById('includeCTA');
+    const includeMedia = document.getElementById('includeMedia');
+    const includeColors = document.getElementById('includeColors');
+    const generateBtn = document.getElementById('generate');
+    const resultEl = document.getElementById('result');
+    const statusEl = document.getElementById('status');
+    const downloadBtn = document.getElementById('download');
+    const copyBtn = document.getElementById('copy');
+
+    const state = {
+      imageName: '',
+      averageColor: '#0f172a',
+      accentColor: '#8b5cf6',
+      palette: []
+    };
+
+    const slugify = (value) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'acf-block';
+
+    blockLabel.addEventListener('input', () => {
+      if (!blockSlug.dataset.manual) {
+        blockSlug.value = slugify(blockLabel.value);
+      }
+    });
+    blockSlug.addEventListener('input', () => {
+      blockSlug.dataset.manual = 'true';
+      blockSlug.value = slugify(blockSlug.value);
+    });
+
+    const toHex = (value) => value.toString(16).padStart(2, '0');
+    const colorFromBucket = (bucket) => {
+      const [r, g, b] = bucket.split('-').map((part) => (parseInt(part, 10) << 4) + 8);
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+
+    const analyzeImage = (src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          const maxSide = 240;
+          const scale = Math.min(maxSide / img.width, maxSide / img.height, 1);
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const { data } = context.getImageData(0, 0, canvas.width, canvas.height);
+          let rSum = 0, gSum = 0, bSum = 0; let count = 0;
+          const buckets = {};
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i + 1], b = data[i + 2];
+            rSum += r; gSum += g; bSum += b; count += 1;
+            const key = `${r >> 4}-${g >> 4}-${b >> 4}`;
+            buckets[key] = (buckets[key] || 0) + 1;
+          }
+          const average = `#${toHex(Math.round(rSum / count))}${toHex(Math.round(gSum / count))}${toHex(Math.round(bSum / count))}`;
+          const dominantBuckets = Object.entries(buckets).sort((a, b) => b[1] - a[1]).slice(0, 5);
+          const palette = dominantBuckets.map(([bucket]) => colorFromBucket(bucket));
+          resolve({ average, palette });
+        };
+        img.src = src;
+      });
+    };
+
+    const renderPalette = ({ average, palette }) => {
+      paletteEl.innerHTML = '';
+      const swatches = [
+        { label: 'Average', value: average },
+        { label: 'Accent', value: palette[1] || palette[0] || '#8b5cf6' },
+        ...palette.map((value, index) => ({ label: `Palette ${index + 1}`, value }))
+      ];
+      const unique = [];
+      swatches.forEach((swatch) => {
+        if (!unique.find((item) => item.value === swatch.value)) {
+          unique.push(swatch);
+        }
+      });
+      unique.slice(0, 6).forEach(({ label, value }) => {
+        const swatch = document.createElement('div');
+        swatch.className = 'swatch';
+        swatch.innerHTML = `<span class="chip" style="background:${value}"></span><span>${label}: ${value}</span>`;
+        paletteEl.appendChild(swatch);
+      });
+    };
+
+    const handleFile = async (file) => {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const src = event.target.result;
+        previewImage.src = src;
+        preview.hidden = false;
+        state.imageName = file.name;
+        statusEl.textContent = `Loaded ${file.name} (${Math.round(file.size / 1024)} KB)`;
+        const { average, palette } = await analyzeImage(src);
+        state.averageColor = average;
+        state.accentColor = palette[1] || palette[0] || '#8b5cf6';
+        state.palette = palette;
+        renderPalette({ average, palette });
+      };
+      reader.readAsDataURL(file);
+    };
+
+    ['click', 'keypress'].forEach((evt) => {
+      dropzone.addEventListener(evt, (e) => {
+        if (evt === 'keypress' && e.key !== 'Enter') return;
+        fileInput.click();
+      });
+    });
+
+    dropzone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      dropzone.classList.remove('dragover');
+      const [file] = event.dataTransfer.files;
+      handleFile(file);
+    });
+    fileInput.addEventListener('change', (event) => {
+      const [file] = event.target.files;
+      handleFile(file);
+    });
+
+    const buildField = (key, label, name, type, extra = {}) => ({ key, label, name, type, ...extra });
+    const makeKey = (slug, suffix) => `field_${slug}_${suffix}_${Math.random().toString(36).slice(2, 8)}`;
+
+    const createFieldGroup = () => {
+      const slug = blockSlug.value || 'acf-block';
+      const label = blockLabel.value || 'Generated Block';
+      const description = blockNotes.value.trim() || 'Starter ACF field group generated from screenshot.';
+      const fields = [];
+      const baseInstructions = state.imageName ? `Reference screenshot: ${state.imageName}` : 'Add details from the provided screenshot.';
+
+      fields.push(buildField(makeKey(slug, 'screenshot'), 'Screenshot reference', 'screenshot_reference', 'image', {
+        instructions: `${baseInstructions}. Store a copy of the uploaded section for QA parity.`,
+        return_format: 'array',
+        preview_size: 'medium'
+      }));
+
+      fields.push(buildField(makeKey(slug, 'summary'), 'Layout summary', 'layout_summary', 'textarea', {
+        instructions: 'Notes that describe the visible structure (eyebrow, heading, supporting copy, CTA, media, etc).',
+        default_value: description,
+        new_lines: 'br'
+      }));
+
+      fields.push(buildField(makeKey(slug, 'eyebrow'), 'Eyebrow', 'eyebrow', 'text', {
+        instructions: 'Short label above the headline.',
+        default_value: '',
+        placeholder: 'Optional overline text'
+      }));
+
+      fields.push(buildField(makeKey(slug, 'heading'), 'Heading', 'heading', 'text', {
+        instructions: 'Main headline pulled from the screenshot.',
+        required: 1
+      }));
+
+      fields.push(buildField(makeKey(slug, 'body'), 'Body copy', 'body', 'wysiwyg', {
+        instructions: 'Rich text that matches the supporting copy in the section.',
+        tabs: 'all'
+      }));
+
+      if (includeMedia.checked) {
+        fields.push(buildField(makeKey(slug, 'media'), 'Supporting media', 'media', 'image', {
+          instructions: 'Foreground image or illustration used in the layout.',
+          return_format: 'array',
+          preview_size: 'medium'
+        }));
+      }
+
+      if (includeColors.checked) {
+        fields.push(buildField(makeKey(slug, 'background_color'), 'Background color', 'background_color', 'color_picker', {
+          default_value: state.averageColor,
+          instructions: 'Suggested from screenshot average color.'
+        }));
+        fields.push(buildField(makeKey(slug, 'accent_color'), 'Accent color', 'accent_color', 'color_picker', {
+          default_value: state.accentColor,
+          instructions: 'Suggested from screenshot accent hue.'
+        }));
+      }
+
+      if (includeCTA.checked) {
+        fields.push(buildField(makeKey(slug, 'cta'), 'Call to action', 'cta', 'group', {
+          layout: 'row',
+          instructions: 'Primary CTA sourced from the screenshot.',
+          sub_fields: [
+            buildField(makeKey(slug, 'cta_label'), 'Label', 'label', 'text', {
+              default_value: ctaText.value,
+              instructions: 'Button or link label.'
+            }),
+            buildField(makeKey(slug, 'cta_url'), 'Target', 'url', 'link', {
+              return_format: 'url',
+              default_value: ctaUrl.value,
+              instructions: 'Destination URL.'
+            })
+          ]
+        }));
+      }
+
+      const fieldGroup = {
+        key: `group_${slug}`,
+        title: label,
+        fields,
+        location: [[{ param: 'block', operator: '==', value: `acf/${slug}` }]],
+        menu_order: 0,
+        position: 'normal',
+        style: 'default',
+        label_placement: 'top',
+        instruction_placement: 'label',
+        active: true,
+        description: `${description}${state.palette.length ? ` | Palette: ${state.palette.join(', ')}` : ''}`,
+        show_in_rest: 0,
+        modified: Math.floor(Date.now() / 1000)
+      };
+
+      return fieldGroup;
+    };
+
+    const generateJSON = () => {
+      const slug = blockSlug.value || 'acf-block';
+      const fieldGroup = createFieldGroup();
+      const json = JSON.stringify(fieldGroup, null, 2);
+      resultEl.value = json;
+      downloadBtn.disabled = false;
+      copyBtn.disabled = false;
+      statusEl.textContent = `Field group ready for acf/${slug}`;
+    };
+
+    generateBtn.addEventListener('click', generateJSON);
+
+    downloadBtn.addEventListener('click', () => {
+      if (!resultEl.value) return;
+      const slug = blockSlug.value || 'acf-block';
+      const blob = new Blob([resultEl.value], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `acf-field-group-${slug}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      if (!resultEl.value) return;
+      await navigator.clipboard.writeText(resultEl.value);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => (copyBtn.textContent = 'Copy to clipboard'), 1200);
+    });
+
+    statusEl.textContent = 'Waiting for screenshot...';
+  </script>
+</body>
+</html>
