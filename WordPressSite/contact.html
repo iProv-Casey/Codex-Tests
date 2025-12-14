@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact | Northwind Creative</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header>
+    <div class="demo-note">Static demo built with plain HTML/CSS — not a running WordPress install.</div>
+    <div class="nav">
+      <div class="logo">Northwind <span>Creative</span></div>
+      <nav>
+        <a href="./index.html">Home</a>
+        <a href="./blog/index.html">Blog</a>
+        <a href="./contact.html" class="active">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="page">
+      <div class="breadcrumbs"><a href="./index.html">Home</a> / Contact</div>
+      <h1>Contact us</h1>
+      <p>Tell us about your WordPress project, migration, or performance goals. We respond within one business day.</p>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Project inquiries</h3>
+          <p><span class="highlight">hello@northwindcreative.com</span><br />Share your goals, timeline, and budget range so we can prepare recommendations.</p>
+        </div>
+        <div class="card">
+          <h3>Support</h3>
+          <p>Already working with us? Email <span class="highlight">support@northwindcreative.com</span> for the fastest response.</p>
+        </div>
+      </div>
+
+      <form class="form" aria-label="Contact form">
+        <div>
+          <label for="name">Name</label>
+          <input id="name" type="text" name="name" placeholder="Jane Doe" required />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email" placeholder="jane@example.com" required />
+        </div>
+        <div>
+          <label for="project">Project details</label>
+          <textarea id="project" name="project" placeholder="Site goals, existing tech, deadlines"></textarea>
+        </div>
+        <div>
+          <button class="button" type="submit">Send message</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div class="layout footer">
+    Crafted by Northwind Creative — specialists in WordPress strategy and delivery.
+  </div>
+</body>
+</html>
